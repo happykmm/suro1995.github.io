@@ -1,0 +1,170 @@
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <style>
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .row {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .box {
+            width: 16rem;
+            height: 16rem;
+            margin: 1rem;
+            border: 1rem solid transparent;
+            border-radius: 1rem;
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+
+        .box.active {
+            border-color: #999;
+        }
+
+        .box[data-coupon="1"] {
+            background-color: rgb(242, 80, 34);
+        }
+
+        .box[data-coupon="2"] {
+            background-color: rgb(242, 176, 2);
+        }
+
+        .box[data-coupon="0"] {
+            background-color: rgb(127, 186, 0);
+        }
+
+        .box.button {
+            background-color: rgb(16, 110, 190);
+            cursor: pointer;
+        }
+
+        .box.button.disabled {
+            background-color: #999;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="box" data-index="1" data-coupon="1">
+                书包
+            </div>
+            <div class="box" data-index="2" data-coupon="0">
+                谢谢参与
+            </div>
+            <div class="box" data-index="3" data-coupon="2">
+                帽衫
+            </div>
+        </div>
+        <div class="row">
+            <div class="box" data-index="0" data-coupon="0">
+                谢谢参与
+            </div>
+            <div class="box button" onclick="onClickButton()">
+                开始抽奖
+            </div>
+            <div class="box" data-index="4" data-coupon="0">
+                谢谢参与
+            </div>
+        </div>
+        <div class="row">
+            <div class="box" data-index="7" data-coupon="2">
+                帽衫
+            </div>
+            <div class="box" data-index="6" data-coupon="0">
+                谢谢参与
+            </div>
+            <div class="box" data-index="5" data-coupon="1">
+                书包
+            </div>
+        </div>
+    </div>
+    <script>
+        const waitTime = 3000;
+        const coupon1 = 45;
+        const coupon2 = 45;
+        const couponNone = 90;
+
+        const total = coupon1 + coupon2 + couponNone;
+
+        const Status = {
+            Stopped: '开始抽奖',
+            Running: '停！',
+            Stopping: 2,
+        }
+
+
+        const fontSize = Math.floor(Math.min(window.innerWidth, window.innerHeight) / 62);
+        document.documentElement.style.fontSize = `${fontSize}px`;
+
+        let status = Status.Stopped;
+        let highlightIndex = 0;
+        let runningToken;
+        function onClickButton() {
+            if (status === Status.Stopped) {
+                status = Status.Running;
+                getButton().innerText = Status.Running;
+                const result = getResult();
+                runningToken = setInterval(() => {
+                    getBox(highlightIndex).classList.remove('active');
+                    highlightIndex = (highlightIndex + 1) % 8;
+                    getBox(highlightIndex).classList.add('active');
+                    if ((status === Status.Stopping) && (getBox(highlightIndex).dataset.coupon == result)) {
+                        clearInterval(runningToken);
+                        setCooldown();
+                    }
+                }, 100);
+            } else if (status = Status.Running) {
+                status = Status.Stopping;
+            }
+        }
+
+        function getBox(index) {
+            return document.querySelector(`.box[data-index="${index}"]`);
+        }
+
+        function getButton() {
+            return document.querySelector('.button');
+        }
+
+        function getResult() {
+            const result = (Math.random() * total) % total;
+            if (result < coupon1) {
+                return 1;
+            } else if (result < coupon1 + coupon2) {
+                return 2;
+            } else {
+                return 0;
+            }
+        }
+
+        function setCooldown() {
+            getButton().classList.add('disabled');
+            setTimeout(() => {
+                status = Status.Stopped;
+                getButton().classList.remove('disabled');
+                getButton().innerText = Status.Stopped;
+            }, waitTime);
+        }
+    </script>
+</body>
+
+</html>
